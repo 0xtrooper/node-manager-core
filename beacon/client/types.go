@@ -76,6 +76,41 @@ type ForkResponse struct {
 type AttestationsResponse struct {
 	Data []Attestation `json:"data"`
 }
+type SignedBeaconBlockHeader struct {
+	Message struct {
+		Slot          utils.Uinteger  `json:"slot"`
+		ProposerIndex string          `json:"proposer_index"`
+		ParentRoot    utils.ByteArray `json:"parent_root"`
+		StateRoot     utils.ByteArray `json:"state_root"`
+		BodyRoot      utils.ByteArray `json:"body_root"`
+	} `json:"message"`
+	Signature utils.ByteArray `json:"signature"`
+}
+type ProposerSlashing struct {
+	SignedHeader1 SignedBeaconBlockHeader `json:"signed_header_1"`
+	SignedHeader2 SignedBeaconBlockHeader `json:"signed_header_2"`
+}
+type SignedAttestationData struct {
+	AttestingIndices []utils.Uinteger `json:"attesting_indices"`
+	Data             struct {
+		Slot            utils.Uinteger  `json:"slot"`
+		Index           utils.Uinteger  `json:"index"`
+		BeaconBlockRoot utils.ByteArray `json:"beacon_block_root"`
+		Source          struct {
+			Epoch utils.Uinteger  `json:"epoch"`
+			Root  utils.ByteArray `json:"root"`
+		} `json:"source"`
+		Target struct {
+			Epoch utils.Uinteger  `json:"epoch"`
+			Root  utils.ByteArray `json:"root"`
+		} `json:"target"`
+	} `json:"data"`
+	Signature utils.ByteArray `json:"signature"`
+}
+type AttesterSlashing struct {
+	Attestation1 SignedAttestationData `json:"attestation_1"`
+	Attestation2 SignedAttestationData `json:"attestation_2"`
+}
 type BeaconBlockResponse struct {
 	Data struct {
 		Message struct {
@@ -87,8 +122,10 @@ type BeaconBlockResponse struct {
 					DepositCount utils.Uinteger  `json:"deposit_count"`
 					BlockHash    utils.ByteArray `json:"block_hash"`
 				} `json:"eth1_data"`
-				Attestations     []Attestation `json:"attestations"`
-				ExecutionPayload *struct {
+				Attestations      []Attestation      `json:"attestations"`
+				ProposerSlashings []ProposerSlashing `json:"proposer_slashings"`
+				AttesterSlashings []AttesterSlashing `json:"attester_slashings"`
+				ExecutionPayload  *struct {
 					FeeRecipient utils.ByteArray `json:"fee_recipient"`
 					BlockNumber  utils.Uinteger  `json:"block_number"`
 				} `json:"execution_payload"`

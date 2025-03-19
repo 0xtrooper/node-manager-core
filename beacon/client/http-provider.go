@@ -34,6 +34,7 @@ const (
 	RequestValidatorSyncDuties             = "/eth/v1/validator/duties/sync/%s"
 	RequestValidatorProposerDuties         = "/eth/v1/validator/duties/proposer/%s"
 	RequestWithdrawalCredentialsChangePath = "/eth/v1/beacon/pool/bls_to_execution_changes"
+	EventStreamPath                        = "/eth/v1/events"
 
 	MaxRequestValidatorsCount = 600
 )
@@ -86,6 +87,21 @@ func (p *BeaconHttpProvider) Beacon_Block(ctx context.Context, blockId string) (
 		return BeaconBlockResponse{}, false, fmt.Errorf("error decoding beacon block data: %w", err)
 	}
 	return beaconBlock, true, nil
+}
+
+func (p *BeaconHttpProvider) Beacon_Event_Stream(ctx context.Context, topics []string) (chan Event, context.CancelFunc, error) {
+	for _, topic := range topics {
+		if topic != "head" {
+			return nil, nil, fmt.Errorf("unsupported topic: %s", topic)
+		}
+	}
+
+	// build the url
+	query := "?topics=" + strings.Join(topics, ",")
+	url := fmt.Sprintf(RequestUrlFormat, p.providerAddress, EventStreamPath) + query
+
+	ch, cancel := startEventStream(ctx, url)
+	return ch, cancel, nil
 }
 
 func (p *BeaconHttpProvider) Beacon_BlsToExecutionChanges_Post(ctx context.Context, request BLSToExecutionChangeRequest) error {
